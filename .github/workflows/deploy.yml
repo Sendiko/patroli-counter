@@ -1,0 +1,76 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run deployment commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            # Stop script on first error
+            set -e
+
+            echo "🚀 Starting Deployment..."
+            cd /var/www
+
+            # 1. Pull Code (No sudo needed now!)
+            echo "⬇️  Pulling latest code..."
+            git pull origin main
+
+            # 2. Install Dependencies (No sudo needed)
+            echo "📦 Installing Composer Dependencies..."
+            composer install --no-dev --optimize-autoloader
+
+            # 3. Database (No sudo needed)
+            echo "🗄️  Migrating Database..."
+            php artisan migrate --force
+
+            # 4. Clear Caches (No sudo needed)
+            # Note: We clear 'view' first to avoid old compiled blade issues
+            echo "🧹 Clearing Cache..."
+            php artisan view:clear
+            php artisan config:clear
+            php artisan route:clear
+            
+            # 5. Build Frontend (No sudo needed)
+            echo "🎨 Building Frontend..."
+            npm install
+            npm run build
+
+            # 6. Re-Optimize
+            echo "⚡ Optimizing..."
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # 7. PERMISSIONS SAFETY CHECK (Needs Sudo)
+            # We ensure everything stays owned by YOU (rizkysendiko) but Group is NGINX
+            # This ensures you never get locked out, but Nginx can still write.
+            echo "🔒 Enforcing Permissions..."
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S chown -R rizkysendiko:nginx /var/www
+            
+            # Ensure directories are writable by the group (Nginx)
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S chmod -R 775 /var/www/storage
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S chmod -R 775 /var/www/bootstrap/cache
+            
+            # Fix SELinux Contexts (Fedora specific - always good to re-apply)
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S chcon -R -t httpd_sys_rw_content_t /var/www/storage
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S chcon -R -t httpd_sys_rw_content_t /var/www/bootstrap/cache
+
+            # 8. Restart Services (Needs Sudo)
+            echo "🔄 Restarting Services..."
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S systemctl restart php-fpm
+            # Nginx usually doesn't need restart for code changes, but good for config/assets
+            echo ${{ secrets.SSH_PASSWORD }} | sudo -S systemctl reload nginx
+
+            echo "✅ Deployment Complete!"
