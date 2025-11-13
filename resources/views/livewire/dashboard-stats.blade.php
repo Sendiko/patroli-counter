@@ -1,5 +1,38 @@
 <div wire:poll.10s class="space-y-8">
     
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-lg font-semibold text-zinc-900 dark:text-white">
+                @if(auth()->user()->isLaboran())
+                    Laboratory Overview
+                @else
+                    My Dashboard
+                @endif
+            </h2>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">
+                @if(auth()->user()->isLaboran())
+                    Monitoring activity across your team.
+                @else
+                    Track your daily tasks and findings.
+                @endif
+            </p>
+        </div>
+
+        @if(auth()->user()->isLaboran())
+            <div class="w-full sm:w-64">
+                <select wire:model.live="filter_user_id" class="px-2 py-1 block w-full rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2">
+                    <option value="">All Team Members</option>
+                    <option value="{{ auth()->id() }}">My Own Logs</option>
+                    <optgroup label="Assistants">
+                        @foreach($myAssistants as $assistant)
+                            <option value="{{ $assistant->id }}">{{ $assistant->name }}</option>
+                        @endforeach
+                    </optgroup>
+                </select>
+            </div>
+        @endif
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 shadow-sm flex items-center">
@@ -35,13 +68,19 @@
 
     <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
-            <h3 class="text-lg font-semibold text-zinc-900 dark:text-white">Laboratory Activity Feed</h3>
+            <h3 class="text-lg font-semibold text-zinc-900 dark:text-white">
+                @if($filter_user_id)
+                    Filtered Activity Log
+                @else
+                    Recent Activity Feed
+                @endif
+            </h3>
         </div>
         <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
             @forelse($recentLogs as $log)
                 <div class="px-6 py-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition">
                     <div class="flex items-center gap-3">
-                        <div class="h-8 w-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-600 dark:text-zinc-300">
+                        <div class="h-8 w-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-600 dark:text-zinc-300 uppercase">
                             {{ substr($log->user->name, 0, 1) }}
                         </div>
                         <div>
@@ -56,7 +95,9 @@
                     <span class="text-xs text-zinc-400">{{ $log->ended_at->diffForHumans() }}</span>
                 </div>
             @empty
-                <div class="p-6 text-center text-zinc-500 dark:text-zinc-400">No recent activity recorded.</div>
+                <div class="p-6 text-center text-zinc-500 dark:text-zinc-400 text-sm">
+                    No recent activity found for this selection.
+                </div>
             @endforelse
         </div>
     </div>
