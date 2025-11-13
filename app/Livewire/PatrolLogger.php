@@ -129,7 +129,7 @@ class PatrolLogger extends Component
             'edit_note' => 'required|string|min:5',
             'edit_started_at' => 'required|date',
             'edit_ended_at' => 'required|date|after:edit_started_at',
-            'edit_image' => 'nullable|image|max:2048',
+            'edit_image' => 'nullable|image|max:10240',
         ]);
 
         $data = [

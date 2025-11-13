@@ -69,7 +69,7 @@ class FoundItemLogger extends Component
             'edit_name' => 'required|string|max:255',
             'edit_room_id' => 'required|exists:rooms,id',
             'edit_date' => 'required|date',
-            'edit_image' => 'nullable|image|max:2048',
+            'edit_image' => 'nullable|image|max:10240',
         ]);
 
         $data = [
