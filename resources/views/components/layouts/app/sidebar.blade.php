@@ -53,11 +53,6 @@
                 target="_blank">
                 {{ __('Repository') }}
             </flux:navlist.item>
-
-            <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire"
-                target="_blank">
-                {{ __('Documentation') }}
-            </flux:navlist.item>
         </flux:navlist>
 
         <!-- Desktop User Menu -->
