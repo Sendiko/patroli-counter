@@ -30,9 +30,11 @@
                     :current="request()->routeIs('found-items')" wire:navigate>
                     {{ __('Found Items') }}
                 </flux:navlist.item>
-                <flux:navlist.item icon="building-office-2" :href="route('rooms')"
-                    :current="request()->routeIs('rooms')" wire:navigate>
-                    {{ __('Room Management') }}
+                @if (auth()->user()->isLaboran())
+                    <flux:navlist.item icon="building-office-2" :href="route('rooms')"
+                        :current="request()->routeIs('rooms')" wire:navigate>
+                        {{ __('Room Management') }}
+                @endif
                 </flux:navlist.item>
                 @if (auth()->user()->isLaboran())
                     <flux:navlist.item icon="users" :href="route('assistants')"
