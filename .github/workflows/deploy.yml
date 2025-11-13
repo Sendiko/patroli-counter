@@ -57,20 +57,20 @@ jobs:
             # We ensure everything stays owned by YOU (rizkysendiko) but Group is NGINX
             # This ensures you never get locked out, but Nginx can still write.
             echo "🔒 Enforcing Permissions..."
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S chown -R rizkysendiko:nginx /var/www
+            chown -R rizkysendiko:nginx /var/www
             
             # Ensure directories are writable by the group (Nginx)
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S chmod -R 775 /var/www/storage
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S chmod -R 775 /var/www/bootstrap/cache
+            chmod -R 775 /var/www/storage
+            chmod -R 775 /var/www/bootstrap/cache
             
             # Fix SELinux Contexts (Fedora specific - always good to re-apply)
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S chcon -R -t httpd_sys_rw_content_t /var/www/storage
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S chcon -R -t httpd_sys_rw_content_t /var/www/bootstrap/cache
+            chcon -R -t httpd_sys_rw_content_t /var/www/storage
+            chcon -R -t httpd_sys_rw_content_t /var/www/bootstrap/cache
 
             # 8. Restart Services (Needs Sudo)
             echo "🔄 Restarting Services..."
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S systemctl restart php-fpm
+            systemctl restart php-fpm
             # Nginx usually doesn't need restart for code changes, but good for config/assets
-            echo ${{ secrets.SSH_PASSWORD }} | sudo -S systemctl reload nginx
+            systemctl reload nginx
 
             echo "✅ Deployment Complete!"
