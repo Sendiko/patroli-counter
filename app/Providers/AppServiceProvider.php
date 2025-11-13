@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Force HTTPS on production/tunnel
         if ($this->app->environment('production')) {
-            URL::forceScheme('https');
+            \Illuminate\Support\Facades\URL::forceScheme('https');
         }
     }
 }
