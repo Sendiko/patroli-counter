@@ -49,7 +49,7 @@
         <flux:spacer />
 
         <flux:navlist variant="outline">
-            <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit"
+            <flux:navlist.item icon="folder-git-2" href="https://github.com/Sendiko/patroli-counter.git"
                 target="_blank">
                 {{ __('Repository') }}
             </flux:navlist.item>
