@@ -135,13 +135,17 @@ class FoundItemLogger extends Component
 
     public function render()
     {
+        $viewableIds = Auth::user()->getViewableUserIds();
+
         return view('livewire.found-item-logger', [
             'rooms' => Room::all(),
-            // Show last 5 items found by this user
-            'recentItems' => FoundItem::where('user_id', Auth::id())
-                                      ->latest()
-                                      ->take(5)
-                                      ->get()
+            
+            // UPDATE THIS QUERY:
+            'recentItems' => FoundItem::whereIn('user_id', $viewableIds) // <--- Changed
+                                    ->with('user') // Load user data
+                                    ->latest()
+                                    ->take(10) // Maybe increase limit for Laboran
+                                    ->get()
         ]);
     }
 }

@@ -23,7 +23,36 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'laboran_id'
     ];
+
+    public function assistants()
+    {
+        return $this->hasMany(User::class, 'laboran_id');
+    }
+
+    // An Assistant belongs to a Laboran
+    public function laboran()
+    {
+        return $this->belongsTo(User::class, 'laboran_id');
+    }
+
+    public function isLaboran(): bool
+    {
+        return $this->role === 'laboran';
+    }
+
+    // Get IDs of users whose data I can see
+    public function getViewableUserIds(): array
+    {
+        if ($this->isLaboran()) {
+            // Return My ID + My Assistants' IDs
+            return $this->assistants()->pluck('id')->push($this->id)->toArray();
+        }
+
+        // If I am an assistant, I only see my own
+        return [$this->id];
+    }
 
     /**
      * The attributes that should be hidden for serialization.

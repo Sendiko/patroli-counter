@@ -34,6 +34,12 @@
                     :current="request()->routeIs('rooms')" wire:navigate>
                     {{ __('Room Management') }}
                 </flux:navlist.item>
+                @if (auth()->user()->isLaboran())
+                    <flux:navlist.item icon="users" :href="route('assistants')"
+                        :current="request()->routeIs('assistants')" wire:navigate>
+                        {{ __('My Assistants') }}
+                    </flux:navlist.item>
+                @endif
 
             </flux:navlist.group>
         </flux:navlist>

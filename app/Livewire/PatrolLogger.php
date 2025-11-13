@@ -168,13 +168,19 @@ class PatrolLogger extends Component
 
     public function render()
     {
+        // Get the list of IDs this user is allowed to see
+        $viewableIds = Auth::user()->getViewableUserIds();
+
         return view('livewire.patrol-logger', [
             'rooms' => Room::all(),
             'types' => ActivityType::cases(),
-            'history' => Activity::where('user_id', Auth::id())
-                                 ->whereNotNull('ended_at')
-                                 ->latest('started_at')
-                                 ->paginate(5) 
+            
+            // UPDATE THIS QUERY:
+            'history' => Activity::whereIn('user_id', $viewableIds) // <--- Changed from where()
+                                ->with('user') // Load user name to see WHO did it
+                                ->whereNotNull('ended_at')
+                                ->latest('started_at')
+                                ->paginate(5) 
         ]);
     }
 }

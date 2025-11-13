@@ -6,6 +6,11 @@ use Livewire\Volt\Volt;
 use App\Livewire\PatrolLogger;
 use App\Livewire\FoundItemLogger; // Don't forget to import!
 use App\Livewire\RoomManager;
+use App\Livewire\AssistantManager;
+
+Route::get('/assistants', AssistantManager::class)
+    ->middleware(['auth'])
+    ->name('assistants');
 
 Route::get('/rooms', RoomManager::class)
     ->middleware(['auth'])
