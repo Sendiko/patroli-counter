@@ -67,10 +67,4 @@ jobs:
             chcon -R -t httpd_sys_rw_content_t /var/www/storage
             chcon -R -t httpd_sys_rw_content_t /var/www/bootstrap/cache
 
-            # 8. Restart Services (Needs Sudo)
-            echo "🔄 Restarting Services..."
-            systemctl restart php-fpm
-            # Nginx usually doesn't need restart for code changes, but good for config/assets
-            systemctl reload nginx
-
             echo "✅ Deployment Complete!"
