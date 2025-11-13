@@ -21,6 +21,19 @@ class PatrolLogger extends Component
     public $proof_image;
     public $currentActivity = null;
 
+    // Modal & Edit Properties
+    public $isDetailOpen = false;
+    public $isEditing = false;
+    public $selectedActivity = null;
+
+    // Edit Buffers
+    public $edit_room_id;
+    public $edit_type;
+    public $edit_note;
+    public $edit_started_at;
+    public $edit_ended_at;
+    public $edit_image; // For new uploads
+
     public function mount()
     {
         $this->checkCurrentActivity();
@@ -75,13 +88,89 @@ class PatrolLogger extends Component
         session()->flash('message', 'Activity logged successfully!');
     }
 
-public function render()
+    public function openDetail($id)
+    {
+        $this->selectedActivity = Activity::with(['room', 'user'])->find($id);
+        $this->isDetailOpen = true;
+        $this->isEditing = false;
+        $this->reset(['edit_image']);
+    }
+
+    public function closeDetail()
+    {
+        $this->isDetailOpen = false;
+        $this->selectedActivity = null;
+        $this->isEditing = false;
+    }
+
+    public function toggleEdit()
+    {
+        $this->edit_room_id = $this->selectedActivity->room_id;
+        $this->edit_type = $this->selectedActivity->type->value;
+        $this->edit_note = $this->selectedActivity->note;
+        // Format for datetime-local input (Y-m-d\TH:i)
+        $this->edit_started_at = $this->selectedActivity->started_at->format('Y-m-d\TH:i');
+        $this->edit_ended_at = $this->selectedActivity->ended_at ? $this->selectedActivity->ended_at->format('Y-m-d\TH:i') : null;
+        
+        $this->isEditing = true;
+    }
+
+    public function cancelEdit()
+    {
+        $this->isEditing = false;
+        $this->reset(['edit_image']);
+    }
+
+    public function updateActivity()
+    {
+        $this->validate([
+            'edit_room_id' => 'required|exists:rooms,id',
+            'edit_type' => 'required',
+            'edit_note' => 'required|string|min:5',
+            'edit_started_at' => 'required|date',
+            'edit_ended_at' => 'required|date|after:edit_started_at',
+            'edit_image' => 'nullable|image|max:2048',
+        ]);
+
+        $data = [
+            'room_id' => $this->edit_room_id,
+            'type' => $this->edit_type,
+            'note' => $this->edit_note,
+            'started_at' => $this->edit_started_at,
+            'ended_at' => $this->edit_ended_at,
+        ];
+
+        if ($this->edit_image) {
+            // Delete old image if exists
+            if ($this->selectedActivity->proof_image_path) {
+                Storage::disk('public')->delete($this->selectedActivity->proof_image_path);
+            }
+            $data['proof_image_path'] = $this->edit_image->store('activity-proofs', 'public');
+        }
+
+        $this->selectedActivity->update($data);
+
+        $this->isEditing = false;
+        $this->reset(['edit_image']);
+        session()->flash('message', 'Log updated successfully.');
+    }
+
+    public function deleteActivity()
+    {
+        if ($this->selectedActivity->proof_image_path) {
+            Storage::disk('public')->delete($this->selectedActivity->proof_image_path);
+        }
+
+        $this->selectedActivity->delete();
+        $this->closeDetail();
+        session()->flash('message', 'Log deleted successfully.');
+    }
+
+    public function render()
     {
         return view('livewire.patrol-logger', [
             'rooms' => Room::all(),
             'types' => ActivityType::cases(),
-            
-            // This is the missing part causing the error!
             'history' => Activity::where('user_id', Auth::id())
                                  ->whereNotNull('ended_at')
                                  ->latest('started_at')
