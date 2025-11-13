@@ -68,7 +68,7 @@ class PatrolLogger extends Component
     {
         $this->validate([
             'note' => 'required|string|min:5',
-            'proof_image' => 'nullable|image|max:2048',
+            'proof_image' => 'nullable|image|max:10240',
         ]);
 
         $path = null;

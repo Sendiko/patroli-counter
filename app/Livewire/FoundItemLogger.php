@@ -111,7 +111,7 @@ class FoundItemLogger extends Component
             'room_id' => 'required|exists:rooms,id',
             'item_name' => 'required|string|max:255',
             'found_date' => 'required|date',
-            'item_image'    => 'nullable|image|max:2048', // 4. Validate image
+            'item_image'    => 'nullable|image|max:10240', // 4. Validate image
         ]);
 
         $imagePath = null;
